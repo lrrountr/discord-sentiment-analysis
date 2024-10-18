@@ -9,6 +9,14 @@ from sentiments.transformers import transformers_sentiment
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+async def fetch_all_messages(channel, limit=None):
+    all_messages = []
+    async for message in channel.history(limit=limit):
+        all_messages.append(message)
+
+    return all_messages
+
+
 class MyClient(discord.Client):
     async def on_ready(self):
         print(f'Logged in as {self.user}')
@@ -22,11 +30,10 @@ class MyClient(discord.Client):
                 if isinstance(channel, discord.TextChannel):
                     channel = self.get_channel(channel.id)
                     if channel:
-                        # Fetch the last 100 messages. 
-                        # TODO: lrrountr to paginate whole history retrieval
-                        async for message in channel.history(limit=100):  
+                         all_messages = await fetch_all_messages(channel)  
+                         for message in all_messages:
                             if message.content:
-                                # Perform sentiment analysis
+                                # Perform sentiment analysis using different libraries
                                 print(f'{message.author}: {message.content}')
                                 vader_sentiment(message.content)
                                 text_blob_sentiment(message.content)    
